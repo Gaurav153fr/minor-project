@@ -137,21 +137,21 @@ export const ChatTab: React.FC<ChatTabProps> = ({
             >
               {/* Avatar */}
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-md ${
+                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
                   isAssistant
-                    ? 'bg-gradient-to-tr from-purple-600 to-pink-500 text-white'
-                    : 'bg-gradient-to-tr from-indigo-500 to-sky-400 text-white'
+                    ? 'bg-indigo-700 border-indigo-500/40 text-white'
+                    : 'bg-slate-700 border-slate-600 text-slate-200'
                 }`}
               >
-                {isAssistant ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                {isAssistant ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
               </div>
 
               {/* Message Bubble Container */}
               <div
-                className={`group relative rounded-2xl px-4 sm:px-5 py-3.5 text-sm leading-relaxed shadow-md ${
+                className={`group relative rounded-2xl px-4 sm:px-5 py-3.5 text-sm leading-relaxed border shadow-sm ${
                   isAssistant
-                    ? 'bg-slate-800/90 border border-white/10 text-slate-100 rounded-tl-sm'
-                    : 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-tr-sm'
+                    ? 'bg-[#111927] border-slate-800 text-slate-100 rounded-tl-sm'
+                    : 'bg-[#1c2738] border-slate-700 text-white rounded-tr-sm'
                 }`}
               >
                 {/* Assistant Copy Action */}
@@ -208,16 +208,16 @@ export const ChatTab: React.FC<ChatTabProps> = ({
         {/* Loading Indicator Bubble */}
         {isLoading && (
           <div className="flex gap-3 max-w-2xl mr-auto">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center shrink-0">
-              <Bot className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg bg-indigo-700 border border-indigo-500/40 text-white flex items-center justify-center shrink-0">
+              <Bot className="w-4 h-4" />
             </div>
-            <div className="bg-slate-800/90 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3.5 flex items-center gap-2 text-slate-300 text-sm">
-              <div className="flex space-x-1.5">
-                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce"></div>
+            <div className="bg-[#111927] border border-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2 text-slate-300 text-sm">
+              <div className="flex space-x-1">
+                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></div>
               </div>
-              <span className="text-xs text-slate-400">Consulting study material & generating answer...</span>
+              <span className="text-xs text-slate-400 font-mono">Consulting curriculum notes &amp; generating answer…</span>
             </div>
           </div>
         )}
@@ -226,14 +226,14 @@ export const ChatTab: React.FC<ChatTabProps> = ({
       </div>
 
       {/* Quick Prompts Carousel / Chips */}
-      <div className="px-4 py-2 bg-slate-950/40 border-t border-white/10 flex items-center gap-2 overflow-x-auto no-scrollbar">
-        <Sparkles className="w-4 h-4 text-indigo-400 shrink-0 ml-1" />
+      <div className="px-4 py-2 bg-[#0c121e] border-t border-slate-800 flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 ml-1" />
         {displayPrompts.map((prompt, idx) => (
           <button
             key={idx}
             onClick={() => handleSend(prompt)}
             disabled={isLoading}
-            className="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800/80 hover:bg-indigo-600/30 hover:border-indigo-400/50 border border-white/10 text-slate-300 hover:text-white transition-all whitespace-nowrap shrink-0 cursor-pointer"
+            className="px-2.5 py-1 rounded-md text-xs font-medium bg-[#141d2e] hover:bg-[#1a263c] border border-slate-700 text-slate-300 hover:text-white transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
             {prompt}
           </button>
@@ -241,7 +241,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
       </div>
 
       {/* Input Box */}
-      <div className="p-3 sm:p-4 bg-slate-950/70 border-t border-white/10">
+      <div className="p-3 sm:p-4 bg-[#0a0f19] border-t border-slate-800">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -256,15 +256,15 @@ export const ChatTab: React.FC<ChatTabProps> = ({
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Ask a question from your study notes (e.g., 'Derive Fourier coefficients for f(x)...')"
             disabled={isLoading}
-            className="flex-1 bg-slate-800/90 border border-white/15 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+            className="flex-1 bg-[#131b2a] border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-400 transition-all font-sans"
           />
           <button
             type="submit"
             disabled={!inputValue.trim() || isLoading}
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
+            className="px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold text-xs flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer border border-indigo-500/40"
           >
             <span>Send</span>
-            <Send className="w-4 h-4" />
+            <Send className="w-3.5 h-3.5" />
           </button>
         </form>
       </div>

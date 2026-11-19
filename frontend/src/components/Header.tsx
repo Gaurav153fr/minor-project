@@ -37,25 +37,25 @@ export const Header: React.FC<HeaderProps> = ({
   );
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0b0f19]/85 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 py-3 transition-all shadow-xl">
+    <header className="sticky top-0 z-50 bg-[#0d1320] border-b border-slate-800 px-4 md:px-8 py-2.5 transition-all shadow-sm">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Brand Logo & Title */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5 animate-pulse" />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-lg bg-indigo-700 border border-indigo-500/40 flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
+              <Sparkles className="w-4 h-4 text-indigo-200" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent group-hover:from-indigo-200 group-hover:to-white transition-colors">
-                  StudyGenius AI
+                <h1 className="text-base font-bold tracking-tight text-slate-100 group-hover:text-white transition-colors">
+                  StudyGenius
                 </h1>
-                <span className="px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full">
-                  RAG Studio
+                <span className="px-2 py-0.2 text-[10px] font-mono font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700 rounded">
+                  Curriculum AI
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-medium">
-                Intelligent Academic & Exam Companion
+              <p className="text-[11px] text-slate-400 font-medium">
+                Academic &amp; University Exam Companion
               </p>
             </div>
           </Link>
@@ -65,17 +65,17 @@ export const Header: React.FC<HeaderProps> = ({
             <Link
               href="/settings"
               aria-label="Settings"
-              className="p-1.5 rounded-lg bg-slate-800 border border-white/10 text-slate-300 hover:text-white"
+              className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white"
             >
               <Settings className="w-4 h-4" />
             </Link>
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-800/80 border border-white/10 text-xs">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-800 border border-slate-700 text-xs">
               <div
                 className={`w-2 h-2 rounded-full ${
-                  isBackendConnected ? 'bg-emerald-400 animate-ping' : 'bg-rose-500'
+                  isBackendConnected ? 'bg-emerald-400' : 'bg-rose-500'
                 }`}
               />
-              <span className="text-[11px] text-slate-300">
+              <span className="text-[11px] text-slate-300 font-mono">
                 {isBackendConnected ? 'Online' : 'Offline'}
               </span>
             </div>
@@ -88,28 +88,28 @@ export const Header: React.FC<HeaderProps> = ({
           {profile ? (
             <Link
               href="/settings"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-500/30 text-xs transition-all hover:border-indigo-400/60 group shadow-sm"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#141d2e] hover:bg-[#1a263c] border border-slate-700 text-xs transition-all group"
               title="Click to manage profile & syllabus settings"
             >
-              <div className="w-6 h-6 rounded-lg bg-indigo-600/60 flex items-center justify-center text-indigo-200 border border-indigo-400/30 group-hover:scale-105 transition-transform">
+              <div className="w-5 h-5 rounded bg-indigo-900/60 flex items-center justify-center text-indigo-300 border border-indigo-700">
                 <GraduationCap className="w-3.5 h-3.5" />
               </div>
               <div className="text-left">
                 <div className="font-bold text-white text-[12px] flex items-center gap-1.5">
                   <span>{profile.name}</span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+                  <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-slate-800 text-amber-300 border border-slate-700">
                     Sem {profile.currentSemester}
                   </span>
                 </div>
-                <div className="text-[10px] text-indigo-300/80 truncate max-w-[140px]">
-                  {profile.degree} • {profile.university.split(',')[0]}
+                <div className="text-[10px] text-slate-400 truncate max-w-[140px]">
+                  {profile.degree} · {profile.university.split(',')[0]}
                 </div>
               </div>
             </Link>
           ) : (
             <button
               onClick={onOpenOnboarding}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold border border-indigo-500/40 transition-all cursor-pointer"
             >
               <User className="w-3.5 h-3.5" />
               <span>Set Up Profile</span>
@@ -117,21 +117,15 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           {/* Desktop Backend Status */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-white/10 text-xs text-slate-300 shadow-inner">
+          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#111827] border border-slate-700 text-xs text-slate-300">
             <Activity className="w-3.5 h-3.5 text-slate-400" />
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 font-mono text-[11px]">
               <span
                 className={`w-2 h-2 rounded-full ${
-                  isBackendConnected
-                    ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
-                    : 'bg-rose-500'
+                  isBackendConnected ? 'bg-emerald-400' : 'bg-rose-500'
                 }`}
               />
-              <span
-                className={`font-semibold ${
-                  isBackendConnected ? 'text-emerald-400' : 'text-rose-400'
-                }`}
-              >
+              <span className={isBackendConnected ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold'}>
                 {isBackendConnected ? 'Connected' : 'Offline'}
               </span>
             </div>

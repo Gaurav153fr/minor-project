@@ -64,6 +64,8 @@ minor/
 
 ## ⚙️ Getting Started
 
+> 📖 **Complete Setup Guide**: See [SETUP.md](SETUP.md) for full step-by-step instructions, automated scripts (`setup.bat` / `setup.sh`), and troubleshooting tips.
+
 ### 1. Prerequisites
 - **Python**: 3.10 or higher
 - **Node.js**: 18.x or higher (npm / pnpm / yarn)

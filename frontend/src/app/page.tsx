@@ -8,6 +8,8 @@ import { QuizTab } from '@/components/tabs/QuizTab';
 import { FlashcardsTab } from '@/components/tabs/FlashcardsTab';
 import { MindmapTab } from '@/components/tabs/MindmapTab';
 import { DocumentsTab } from '@/components/tabs/DocumentsTab';
+import { VivaTab } from '@/components/tabs/VivaTab';
+import { PodcastTab } from '@/components/tabs/PodcastTab';
 import { DocumentModal } from '@/components/DocumentModal';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import { DocumentItem, StudyTab } from '@/types';
@@ -161,6 +163,22 @@ export default function Home() {
               onRefresh={loadDocuments}
               onOpenDocumentModal={handleOpenDocumentModal}
               profile={profile}
+            />
+          )}
+
+          {activeTab === 'viva' && (
+            <VivaTab
+              selectedDocument={selectedDocument}
+              profile={profile}
+              studentContext={studentContext}
+            />
+          )}
+
+          {activeTab === 'podcast' && (
+            <PodcastTab
+              selectedDocument={selectedDocument}
+              profile={profile}
+              studentContext={studentContext}
             />
           )}
         </div>

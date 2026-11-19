@@ -117,67 +117,67 @@ export const QuizTab: React.FC<QuizTabProps> = ({
         <button
           onClick={handleStartQuiz}
           disabled={isLoading}
-          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 transition-all cursor-pointer disabled:opacity-50"
+          className="w-full sm:w-auto px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 border border-emerald-500/40 transition-all cursor-pointer disabled:opacity-50"
         >
-          <Sparkles className="w-4 h-4" />
+          <Sparkles className="w-3.5 h-3.5" />
           <span>{quizData ? 'Regenerate Quiz' : 'Generate Quiz'}</span>
         </button>
       </div>
 
       {/* Main Content Area */}
       {isLoading ? (
-        <div className="bg-slate-900/70 border border-white/10 rounded-2xl p-12 flex flex-col items-center justify-center gap-4 text-center shadow-xl">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 animate-spin">
-            <HelpCircle className="w-6 h-6" />
+        <div className="bg-[#111927] border border-slate-800 rounded-xl p-12 flex flex-col items-center justify-center gap-3 text-center shadow-sm">
+          <div className="w-10 h-10 rounded-lg bg-indigo-900/50 border border-indigo-700 flex items-center justify-center text-indigo-400 animate-spin">
+            <HelpCircle className="w-5 h-5" />
           </div>
-          <h3 className="text-base font-semibold text-white">Synthesizing Smart Quiz...</h3>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-md">
-            Analyzing notes from {selectedDocument === 'all' ? 'all courses' : selectedDocument} to craft balanced conceptual questions and explanations.
+          <h3 className="text-sm font-semibold text-slate-100">Synthesizing Assessment Questions…</h3>
+          <p className="text-xs text-slate-400 max-w-md font-mono">
+            Extracting curriculum concepts from {selectedDocument === 'all' ? 'all courses' : selectedDocument}.
           </p>
         </div>
       ) : error ? (
-        <div className="bg-slate-900/70 border border-rose-500/30 rounded-2xl p-8 text-center space-y-4 shadow-xl">
-          <p className="text-rose-400 text-sm">{error}</p>
+        <div className="bg-[#111927] border border-red-800 rounded-xl p-8 text-center space-y-3 shadow-sm">
+          <p className="text-red-400 text-sm font-mono">{error}</p>
           <button
             onClick={handleStartQuiz}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg border border-slate-700"
           >
             Retry Generation
           </button>
         </div>
       ) : !quizData ? (
-        <div className="bg-slate-900/70 border border-white/10 rounded-2xl p-12 flex flex-col items-center justify-center text-center space-y-4 shadow-xl">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-            <HelpCircle className="w-7 h-7" />
+        <div className="bg-[#111927] border border-slate-800 rounded-xl p-12 flex flex-col items-center justify-center text-center space-y-4 shadow-sm">
+          <div className="w-12 h-12 rounded-lg bg-[#1a2538] border border-slate-700 flex items-center justify-center text-amber-400">
+            <HelpCircle className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-white">Ready to test your mastery?</h3>
-          <p className="text-sm text-slate-400 max-w-md">
-            Generate an AI-powered assessment with custom difficulty, immediate feedback, and step-by-step explanations.
+          <h3 className="text-base font-bold text-slate-100">Curriculum Knowledge Assessment</h3>
+          <p className="text-xs sm:text-sm text-slate-400 max-w-md leading-relaxed">
+            Generate multiple-choice conceptual questions with immediate evaluation and textbook explanations.
           </p>
           <button
             onClick={handleStartQuiz}
-            className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/30 transition-all cursor-pointer"
+            className="px-5 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-xs transition border border-emerald-500/40 cursor-pointer"
           >
             Start Quiz Now
           </button>
         </div>
       ) : isCompleted ? (
         /* Quiz Finished View */
-        <div className="bg-slate-900/80 border border-white/10 rounded-2xl p-8 sm:p-12 text-center space-y-6 shadow-2xl animate-in zoom-in-95 duration-200">
-          <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-xl shadow-amber-500/10">
-            <Trophy className="w-10 h-10 animate-bounce" />
+        <div className="bg-[#111927] border border-slate-800 rounded-xl p-8 sm:p-10 text-center space-y-5 shadow-md">
+          <div className="w-16 h-16 mx-auto rounded-xl bg-[#1e293b] border border-slate-700 flex items-center justify-center text-amber-400">
+            <Trophy className="w-8 h-8" />
           </div>
 
           <div>
-            <h2 className="text-2xl font-extrabold text-white">Quiz Completed!</h2>
-            <p className="text-sm text-slate-400 mt-1">{quizData.title}</p>
+            <h2 className="text-xl font-bold text-slate-100">Assessment Completed</h2>
+            <p className="text-xs text-slate-400 font-mono mt-0.5">{quizData.title}</p>
           </div>
 
-          <div className="py-4">
-            <div className="text-5xl font-black bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              {score} / {quizData.questions.length}
+          <div className="py-2">
+            <div className="text-4xl font-mono font-black text-amber-400">
+              {score} <span className="text-slate-400 text-xl font-normal">/ {quizData.questions.length}</span>
             </div>
-            <p className="text-sm font-semibold text-emerald-400 mt-2">
+            <p className="text-xs font-mono font-bold text-emerald-400 mt-2">
               {Math.round((score / quizData.questions.length) * 100)}% Mastery Level
             </p>
           </div>
@@ -201,16 +201,16 @@ export const QuizTab: React.FC<QuizTabProps> = ({
         </div>
       ) : currentQuestion ? (
         /* Active Question Card */
-        <div className="bg-slate-900/80 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
+        <div className="bg-[#111927] border border-slate-800 rounded-xl p-6 sm:p-8 space-y-5 shadow-md">
           {/* Header & Progress */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-4 border-b border-white/10">
-            <div className="flex items-center gap-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+            <div className="flex items-center gap-2 text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
               <BookOpen className="w-4 h-4" />
               <span>
-                Question {currentIndex + 1} of {quizData.questions.length} • {currentQuestion.source}
+                Question {currentIndex + 1} of {quizData.questions.length} · {currentQuestion.source}
               </span>
             </div>
-            <div className="px-3 py-1 rounded-full bg-slate-800 border border-white/10 text-xs font-bold text-slate-300">
+            <div className="px-2.5 py-0.5 rounded bg-[#1e293b] border border-slate-700 text-xs font-mono text-slate-300 font-bold">
               Score: {score} / {currentIndex}
             </div>
           </div>
@@ -218,7 +218,7 @@ export const QuizTab: React.FC<QuizTabProps> = ({
           {/* Stepper Progress Bar */}
           <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
             <div
-              className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-300"
+              className="bg-emerald-500 h-full transition-all duration-300"
               style={{ width: `${((currentIndex + 1) / quizData.questions.length) * 100}%` }}
             />
           </div>

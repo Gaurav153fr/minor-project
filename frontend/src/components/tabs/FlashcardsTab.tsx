@@ -158,40 +158,40 @@ export const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
               }`}
             >
               {/* Front Face */}
-              <div className="absolute inset-0 backface-hidden rounded-3xl p-7 sm:p-9 flex flex-col justify-between bg-gradient-to-br from-slate-800/95 via-slate-900/95 to-slate-950/95 border-2 border-indigo-500/40 shadow-2xl shadow-indigo-500/10">
+              <div className="absolute inset-0 backface-hidden rounded-2xl p-7 sm:p-9 flex flex-col justify-between bg-[#111927] border-2 border-slate-700 shadow-md">
                 <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold uppercase tracking-wider bg-[#1e293b] text-amber-300 border border-slate-700">
                     {activeCard.category || 'Concept'}
                   </span>
-                  <span className="text-xs text-slate-400 font-semibold flex items-center gap-1">
+                  <span className="text-xs text-slate-400 font-mono flex items-center gap-1">
                     <BookOpen className="w-3.5 h-3.5" />
                     {activeCard.source}
                   </span>
                 </div>
 
-                <div className="text-center font-bold text-lg sm:text-xl text-white leading-relaxed overflow-y-auto max-h-[190px] py-2">
+                <div className="text-center font-bold text-lg sm:text-xl text-slate-100 leading-relaxed overflow-y-auto max-h-[190px] py-2 font-sans">
                   {activeCard.front}
                 </div>
 
-                <div className="text-center text-xs text-slate-500 font-medium">
-                  Click card or press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-white/10 text-slate-300 font-mono text-[10px]">Space</kbd> to flip ↺
+                <div className="text-center text-xs text-slate-500 font-mono">
+                  Click card or press <kbd className="px-1.5 py-0.5 rounded bg-[#1e293b] border border-slate-700 text-slate-300 font-mono text-[10px]">Space</kbd> to flip ↺
                 </div>
               </div>
 
               {/* Back Face */}
-              <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl p-7 sm:p-9 flex flex-col justify-between bg-gradient-to-br from-indigo-950/95 via-purple-950/95 to-slate-950/95 border-2 border-purple-500/40 shadow-2xl shadow-purple-500/10">
+              <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-2xl p-7 sm:p-9 flex flex-col justify-between bg-[#142136] border-2 border-emerald-600/60 shadow-md">
                 <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                    Explanation / Answer
+                  <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold uppercase tracking-wider bg-emerald-950 text-emerald-300 border border-emerald-800">
+                    Explanation &amp; Definition
                   </span>
-                  <span className="text-xs text-purple-300 font-semibold">{activeCard.source}</span>
+                  <span className="text-xs text-slate-300 font-mono">{activeCard.source}</span>
                 </div>
 
-                <div className="text-left font-normal text-sm sm:text-base text-slate-100 leading-relaxed overflow-y-auto max-h-[190px] py-2">
+                <div className="text-left font-normal text-sm sm:text-base text-slate-100 leading-relaxed overflow-y-auto max-h-[190px] py-2 font-sans">
                   {activeCard.back}
                 </div>
 
-                <div className="text-center text-xs text-slate-400 font-medium">
+                <div className="text-center text-xs text-slate-400 font-mono">
                   Click card to flip back ↻
                 </div>
               </div>

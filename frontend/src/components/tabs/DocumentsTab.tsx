@@ -107,29 +107,29 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       {/* Top Header & View Mode Switcher */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-slate-900/70 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl">
-        <div className="flex items-center gap-2 p-1 bg-slate-950/70 rounded-xl border border-white/5">
+        <div className="flex items-center gap-1.5 p-1 bg-[#0b101b] rounded-lg border border-slate-800">
           <button
             onClick={() => setViewMode('curriculum')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border ${
               viewMode === 'curriculum'
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/20'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                ? 'bg-[#1b2537] text-white border-slate-600 shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800 border-transparent'
             }`}
           >
             <FolderTree className="w-3.5 h-3.5" />
-            <span>Curriculum Explorer (Semesters)</span>
+            <span>Curriculum Explorer</span>
           </button>
 
           <button
             onClick={() => setViewMode('all_materials')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border ${
               viewMode === 'all_materials'
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/20'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                ? 'bg-[#1b2537] text-white border-slate-600 shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800 border-transparent'
             }`}
           >
             <List className="w-3.5 h-3.5" />
-            <span>All Materials & Search ({documents.length})</span>
+            <span>All Materials &amp; Search ({documents.length})</span>
           </button>
         </div>
 

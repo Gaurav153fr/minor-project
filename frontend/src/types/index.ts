@@ -113,5 +113,93 @@ export interface CurriculumStructureResponse {
   semesters: SemesterStructure[];
 }
 
-export type StudyTab = 'chat' | 'quiz' | 'flashcards' | 'mindmap' | 'documents';
+export type StudyTab = 'chat' | 'quiz' | 'flashcards' | 'mindmap' | 'documents' | 'viva' | 'podcast';
 
+// ── Viva AI Types ──────────────────────────────────────────────
+
+export interface VivaStartRequest {
+  topic: string;
+  difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
+  question_count: number;
+  student_context?: string;
+}
+
+export interface VivaStartResponse {
+  session_id: string;
+  total_questions: number;
+  question_number: number;
+  question: string;
+  topic_tag: string;
+}
+
+export interface VivaAnswerRequest {
+  session_id: string;
+  question_number: number;
+  student_answer: string;
+}
+
+export interface VivaNextQuestion {
+  question_number: number;
+  question: string;
+  topic_tag: string;
+}
+
+export interface VivaAnswerResponse {
+  score: number;
+  max_score: number;
+  feedback: string;
+  correct_answer_summary: string;
+  is_last_question: boolean;
+  next_question?: VivaNextQuestion | null;
+}
+
+export interface VivaSummaryRequest {
+  session_id: string;
+}
+
+export interface VivaQuestionBreakdown {
+  question_number: number;
+  question: string;
+  student_answer: string;
+  score: number;
+  max_score: number;
+  feedback: string;
+  correct_answer_summary: string;
+  topic_tag: string;
+}
+
+export interface VivaSummaryResponse {
+  total_score: number;
+  max_score: number;
+  percentage: number;
+  grade: string;
+  weak_topics: string[];
+  strong_topics: string[];
+  recommendations: string;
+  question_breakdown: VivaQuestionBreakdown[];
+}
+
+// ── Podcast AI Types ──────────────────────────────────────────
+
+export interface PodcastHostInfo {
+  name: string;
+  gender: string;
+  lang_code: string;
+}
+
+export interface PodcastDialogueLine {
+  turn: number;
+  speaker: string;
+  text: string;
+  emotion?: string;
+}
+
+export interface PodcastScript {
+  episode_title: string;
+  topic_tag: string;
+  language: string;
+  duration_minutes: number;
+  host1: PodcastHostInfo;
+  host2: PodcastHostInfo;
+  script: PodcastDialogueLine[];
+}

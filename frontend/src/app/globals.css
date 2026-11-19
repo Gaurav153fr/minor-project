@@ -17,15 +17,13 @@
 }
 
 body {
-  background-color: var(--bg-base);
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(217, 70, 239, 0.12) 0px, transparent 50%),
-    radial-gradient(at 50% 50%, rgba(14, 165, 233, 0.08) 0px, transparent 50%);
-  background-attachment: fixed;
+  background-color: #0a0e1a;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
   color: var(--text-main);
   min-height: 100vh;
   overflow-x: hidden;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 /* Custom scrollbars */
@@ -185,3 +183,21 @@ body {
   background: rgba(99, 102, 241, 0.4);
   color: #ffffff;
 }
+
+/* Viva AI animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.35s ease both;
+}
+
+/* Podcast transcript scroll */
+.podcast-scroll {
+  scroll-behavior: smooth;
+}
+.podcast-scroll::-webkit-scrollbar { width: 4px; }
+.podcast-scroll::-webkit-scrollbar-track { background: transparent; }
+.podcast-scroll::-webkit-scrollbar-thumb { background: rgba(217,70,239,0.3); border-radius: 9999px; }
+.podcast-scroll::-webkit-scrollbar-thumb:hover { background: rgba(217,70,239,0.6); }

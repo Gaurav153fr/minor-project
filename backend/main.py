@@ -3,6 +3,8 @@ import glob
 import json
 import re
 import time
+import uuid
+from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -62,41 +64,55 @@ def get_vectorstore():
 
 FALLBACK_MODELS = [
     "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
+    "gemini-3.8-flash",
+    "gemini-flash-latest",
 ]
 
+def _extract_text_content(content: Any) -> str:
+    """Normalize LangChain/Gemini content to plain string (handles both str and list of parts)."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for item in content:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict):
+                parts.append(item.get("text", ""))
+            elif hasattr(item, "text"):
+                parts.append(str(item.text))
+            else:
+                parts.append(str(item))
+        return "".join(parts)
+    return str(content)
+
 def invoke_llm_with_fallback(prompt_text: str) -> str:
-    """Invoke Gemini with automatic model fallback when free tier rate limits or quota are encountered."""
+    """Invoke Gemini with automatic model fallback and retry for transient network/rate limits."""
     key = get_api_key()
     last_err = None
 
     for model_name in FALLBACK_MODELS:
-        try:
-            # Explicitly set temperature and pass api key
-            llm = ChatGoogleGenerativeAI(
-                model=model_name,
-                google_api_key=key,
-                temperature=0.3,
-                max_retries=1  # Let fallback loop handle model switches quickly
-            )
-            
-            # Disable automatic tool/function calling binding if LangChain tries to infer tools
-            res = llm.invoke(prompt_text)
-            
-            if res and res.content:
-                return res.content
-                
-        except Exception as e:
-            err_str = str(e)
-            last_err = e
-            print(f"[Model Fallback] {model_name} failed: {err_str[:120]}... Trying next model.")
-            
-            # Pause briefly to prevent rapid quota burn across fallbacks
-            time.sleep(1)
-            continue
+        # Try up to 2 attempts per model for transient socket drops
+        for attempt in range(2):
+            try:
+                llm = ChatGoogleGenerativeAI(
+                    model=model_name,
+                    google_api_key=key,
+                    temperature=0.3,
+                    max_retries=1
+                )
+                res = llm.invoke(prompt_text)
+                if res and res.content:
+                    extracted = _extract_text_content(res.content)
+                    if extracted.strip():
+                        return extracted
+            except Exception as e:
+                err_str = str(e)
+                last_err = e
+                print(f"[Model Fallback] {model_name} (attempt {attempt+1}) error: {err_str[:120]}...")
+                time.sleep(1.5)
+                continue
 
-    # All models failed in the fallback list
     raise HTTPException(
         status_code=429,
         detail=f"All Gemini fallback models exhausted or rate-limited. Details: {str(last_err)}"
@@ -617,6 +633,429 @@ Output strictly valid JSON matching this schema:
         hierarchy=hierarchy
     )
 
+# ───────────────────────────────────────────────────────────────
+# PODCAST AI — Two-Host Conversational Episode Generator
+# ───────────────────────────────────────────────────────────────
+
+class PodcastRequest(BaseModel):
+    topic: str = "all"
+    language: str = "english"       # "english" | "hindi"
+    duration: str = "medium"        # "short" | "medium" | "long"
+    student_context: Optional[str] = None
+
+class PodcastDialogueLine(BaseModel):
+    turn: int
+    speaker: str                    # "Arjun" | "Priya"
+    text: str
+    emotion: Optional[str] = "neutral"
+
+class PodcastHostInfo(BaseModel):
+    name: str
+    gender: str
+    lang_code: str
+
+class PodcastScript(BaseModel):
+    episode_title: str
+    topic_tag: str
+    language: str
+    duration_minutes: int
+    host1: PodcastHostInfo
+    host2: PodcastHostInfo
+    script: List[PodcastDialogueLine]
+
+@app.post("/api/podcast/generate", response_model=PodcastScript)
+async def generate_podcast(request: PodcastRequest):
+    """Generate a two-host podcast script from syllabus content using RAG."""
+    context = get_document_context(request.topic, max_chars_per_doc=4500)
+    if not context.strip():
+        raise HTTPException(status_code=400, detail="No document content found. Please verify docs directory.")
+
+    duration_map = {"short": (8, 3), "medium": (14, 6), "long": (22, 10)}
+    turns, minutes = duration_map.get(request.duration, (14, 6))
+
+    student_info = f"\nStudent context: {request.student_context}" if request.student_context else ""
+    lang = request.language.lower()
+
+    if lang == "hindi":
+        lang_code = "hi-IN"
+        lang_instructions = """
+Language rules (VERY IMPORTANT):
+- Write in casual everyday Hindi + Hinglish. NOT formal/suddh Hindi.
+- Mix English technical terms naturally (e.g. "database", "query", "pointer" stay in English).
+- Arjun's style: "Yaar", "bhai", "matlab", "wait wait", "accha accha", "ek second", "seriously?", "ohhhh"
+- Priya's style: "Arre simple hai", "dekh aise samajh", "basically", "toh hua kya", "haan exactly", "sun sun"
+- Use relatable Indian college examples: canteen, exams, hostel, WhatsApp group, phone battery dying
+- Natural interruptions: "Haan haan—", "Ruk ruk—", "arey bata na!"
+- NEVER use: "समझिए", "इस प्रकार", "आपको बताते हैं" (too formal)
+- Keep it fun, light, like two friends in a college cafe chatting
+"""
+        host1_name, host2_name = "Arjun", "Priya"
+        intro_instruction = f"Start with Arjun casually saying 'Welcome to StudyGenius Podcast yaar!' in Hinglish and introducing the topic."
+    else:
+        lang = "english"
+        lang_code = "en-IN"
+        lang_instructions = """
+Language rules (VERY IMPORTANT):
+- Casual conversational English — NO textbook tone, NO formal language
+- Use analogies comparing CS/tech concepts to everyday life
+- Arjun's style: "Wait so basically...", "Hold on—", "Okay but why though?", "That's actually wild"
+- Priya's style: "Right! Think of it like...", "Exactly, and here's the cool part—", "No no, listen—"
+- Light Gen-Z energy: "lowkey", "literally", "okay but—", "no cap"
+- Include "aha moments" where Arjun suddenly gets a concept
+- Make jokes, use comparisons: databases like organized fridges, etc.
+- Keep it fun, like a study podcast two friends made in their dorm
+"""
+        host1_name, host2_name = "Arjun", "Priya"
+        intro_instruction = f"Start with Arjun saying 'Welcome back to StudyGenius Podcast!' and excitedly introducing today's topic."
+
+    prompt = f"""You are a podcast scriptwriter. Write a fun, engaging two-host podcast episode about the study topic below.
+
+Hosts:
+- {host1_name}: The curious one — slightly confused, asks questions on behalf of the listener, reacts with surprise
+- {host2_name}: The knowledgeable one — explains concepts simply, uses analogies, occasionally teases {host1_name}
+
+{lang_instructions}
+
+Study Material (use this as the source of truth for content):
+{context}
+{student_info}
+
+Instructions:
+1. Write exactly {turns} dialogue turns total (alternating between {host1_name} and {host2_name}).
+2. Cover the key concepts from the study material but explain them conversationally.
+3. {intro_instruction}
+4. End with {host2_name} summarizing the key points in a fun way, then {host1_name} signing off.
+5. Each line should be 1-4 natural spoken sentences. No bullet points inside the text.
+6. Assign an emotion per line: "curious", "explaining", "surprised", "laughing", "excited", "thoughtful"
+
+Return ONLY valid JSON (no markdown, no extra text) matching this exact schema:
+{{
+  "episode_title": "Catchy episode title with emoji",
+  "topic_tag": "Subject - Topic",
+  "duration_minutes": {minutes},
+  "script": [
+    {{
+      "turn": 1,
+      "speaker": "{host1_name}",
+      "text": "Dialogue line here.",
+      "emotion": "curious"
+    }}
+  ]
+}}"""
+
+    raw = await run_in_threadpool(invoke_llm_with_fallback, prompt)
+    data = clean_json_response(raw)
+
+    script_lines = []
+    for item in data.get("script", []):
+        script_lines.append(PodcastDialogueLine(
+            turn=item.get("turn", len(script_lines) + 1),
+            speaker=item.get("speaker", host1_name),
+            text=item.get("text", ""),
+            emotion=item.get("emotion", "neutral"),
+        ))
+
+    return PodcastScript(
+        episode_title=data.get("episode_title", f"Episode: {request.topic}"),
+        topic_tag=data.get("topic_tag", request.topic),
+        language=lang,
+        duration_minutes=data.get("duration_minutes", minutes),
+        host1=PodcastHostInfo(name=host1_name, gender="male", lang_code=lang_code),
+        host2=PodcastHostInfo(name=host2_name, gender="female", lang_code=lang_code),
+        script=script_lines,
+    )
+
+# ───────────────────────────────────────────────────────────────
+# VIVA AI — Oral Exam Simulator
+# ───────────────────────────────────────────────────────────────
+
+# In-memory session store  { session_id: {...} }
+viva_sessions: Dict[str, Any] = {}
+
+SESSION_TTL_HOURS = 2  # auto-expire stale sessions
+
+def _purge_old_sessions():
+    cutoff = datetime.utcnow() - timedelta(hours=SESSION_TTL_HOURS)
+    stale = [sid for sid, s in viva_sessions.items() if s.get("created_at", datetime.utcnow()) < cutoff]
+    for sid in stale:
+        del viva_sessions[sid]
+
+# ── Pydantic models ──
+
+class VivaStartRequest(BaseModel):
+    topic: str = "all"          # 'all' or a specific doc path
+    difficulty: str = "mixed"  # easy | medium | hard | mixed
+    question_count: int = 8
+    student_context: Optional[str] = None
+
+class VivaNextQuestion(BaseModel):
+    question_number: int
+    question: str
+    topic_tag: str
+
+class VivaStartResponse(BaseModel):
+    session_id: str
+    total_questions: int
+    question_number: int
+    question: str
+    topic_tag: str
+
+class VivaAnswerRequest(BaseModel):
+    session_id: str
+    question_number: int          # 1-based
+    student_answer: str
+
+class VivaAnswerResponse(BaseModel):
+    score: int
+    max_score: int
+    feedback: str
+    correct_answer_summary: str
+    is_last_question: bool
+    next_question: Optional[VivaNextQuestion] = None
+
+class VivaSummaryRequest(BaseModel):
+    session_id: str
+
+class VivaQuestionBreakdown(BaseModel):
+    question_number: int
+    question: str
+    student_answer: str
+    score: int
+    max_score: int
+    feedback: str
+    correct_answer_summary: str
+    topic_tag: str
+
+class VivaSummaryResponse(BaseModel):
+    total_score: int
+    max_score: int
+    percentage: float
+    grade: str
+    weak_topics: List[str]
+    strong_topics: List[str]
+    recommendations: str
+    question_breakdown: List[VivaQuestionBreakdown]
+
+# ── Helpers ──
+
+def _grade(pct: float) -> str:
+    if pct >= 85: return "A+"
+    if pct >= 75: return "A"
+    if pct >= 65: return "B"
+    if pct >= 55: return "C"
+    if pct >= 45: return "D"
+    return "F"
+
+# ── Endpoints ──
+
+@app.post("/api/viva/start", response_model=VivaStartResponse)
+async def viva_start(request: VivaStartRequest):
+    """Generate a viva session: RAG-powered question bank from syllabus + return first question."""
+    _purge_old_sessions()
+
+    context = get_document_context(request.topic, max_chars_per_doc=4000)
+    if not context.strip():
+        raise HTTPException(status_code=400, detail="No document content found. Please verify docs directory.")
+
+    count = max(3, min(request.question_count, 15))
+    student_info = f"\nStudent profile: {request.student_context}" if request.student_context else ""
+
+    prompt = f"""You are a strict but fair university viva examiner.
+Generate exactly {count} oral viva questions from the study material below.
+Difficulty: {request.difficulty}.{student_info}
+
+Study Material:
+{context}
+
+Rules:
+1. Questions must be open-ended (not MCQ). They should test deep understanding.
+2. Provide an ideal expected answer for each question (2-5 sentences, exam-ready).
+3. Include a short topic_tag (e.g. "DBMS - Normalization", "OS - Scheduling").
+4. Vary difficulty if "mixed"; otherwise target {request.difficulty} questions only.
+
+Return ONLY valid JSON (no markdown fences) matching this exact schema:
+{{
+  "questions": [
+    {{
+      "q_num": 1,
+      "question": "Question text here?",
+      "expected_answer": "Concise model answer here.",
+      "topic_tag": "Subject - Topic"
+    }}
+  ]
+}}"""
+
+    raw = await run_in_threadpool(invoke_llm_with_fallback, prompt)
+    data = clean_json_response(raw)
+
+    questions = data.get("questions", [])
+    if not questions:
+        raise HTTPException(status_code=500, detail="AI failed to generate viva questions. Please try again.")
+
+    session_id = str(uuid.uuid4())
+    viva_sessions[session_id] = {
+        "questions": questions,
+        "answers": {},       # q_num -> student_answer
+        "scores": {},        # q_num -> int score
+        "feedback": {},      # q_num -> str feedback
+        "correct_answers": {},  # q_num -> str
+        "total": len(questions),
+        "config": {
+            "topic": request.topic,
+            "difficulty": request.difficulty,
+        },
+        "created_at": datetime.utcnow(),
+    }
+
+    first = questions[0]
+    return VivaStartResponse(
+        session_id=session_id,
+        total_questions=len(questions),
+        question_number=first.get("q_num", 1),
+        question=first.get("question", ""),
+        topic_tag=first.get("topic_tag", "General"),
+    )
+
+
+@app.post("/api/viva/answer", response_model=VivaAnswerResponse)
+async def viva_answer(request: VivaAnswerRequest):
+    """Evaluate student's answer for a viva question and return score + feedback."""
+    session = viva_sessions.get(request.session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Viva session not found or expired. Please start a new session.")
+
+    # Find the question being answered
+    q_entry = next((q for q in session["questions"] if q.get("q_num") == request.question_number), None)
+    if not q_entry:
+        raise HTTPException(status_code=400, detail=f"Question number {request.question_number} not found in session.")
+
+    expected = q_entry.get("expected_answer", "")
+    question_text = q_entry.get("question", "")
+    topic_tag = q_entry.get("topic_tag", "General")
+
+    prompt = f"""You are a strict university viva examiner evaluating a student's oral answer.
+
+Question: {question_text}
+Topic: {topic_tag}
+Expected Answer (model): {expected}
+Student's Answer: {request.student_answer}
+
+Evaluate on three criteria (each out of 5 marks):
+1. Accuracy — Is the answer factually correct?
+2. Completeness — Does it cover all key points?
+3. Clarity — Is it well-explained and structured?
+
+Return ONLY valid JSON (no markdown fences):
+{{
+  "accuracy": <0-5>,
+  "completeness": <0-5>,
+  "clarity": <0-5>,
+  "feedback": "2-3 sentence constructive feedback mentioning what was good and what was missed.",
+  "correct_answer_summary": "Concise 2-3 sentence model answer the student should know."
+}}"""
+
+    raw = await run_in_threadpool(invoke_llm_with_fallback, prompt)
+    eval_data = clean_json_response(raw)
+
+    acc = int(eval_data.get("accuracy", 3))
+    comp = int(eval_data.get("completeness", 3))
+    clar = int(eval_data.get("clarity", 3))
+    score = acc + comp + clar
+
+    # Store results
+    session["answers"][request.question_number] = request.student_answer
+    session["scores"][request.question_number] = score
+    session["feedback"][request.question_number] = eval_data.get("feedback", "")
+    session["correct_answers"][request.question_number] = eval_data.get("correct_answer_summary", expected)
+
+    # Find next question
+    all_q_nums = [q.get("q_num") for q in session["questions"]]
+    current_idx = all_q_nums.index(request.question_number)
+    is_last = current_idx + 1 >= len(all_q_nums)
+    next_q: Optional[VivaNextQuestion] = None
+
+    if not is_last:
+        nq = session["questions"][current_idx + 1]
+        next_q = VivaNextQuestion(
+            question_number=nq.get("q_num"),
+            question=nq.get("question", ""),
+            topic_tag=nq.get("topic_tag", "General"),
+        )
+
+    return VivaAnswerResponse(
+        score=score,
+        max_score=15,
+        feedback=eval_data.get("feedback", ""),
+        correct_answer_summary=eval_data.get("correct_answer_summary", expected),
+        is_last_question=is_last,
+        next_question=next_q,
+    )
+
+
+@app.post("/api/viva/summary", response_model=VivaSummaryResponse)
+async def viva_summary(request: VivaSummaryRequest):
+    """Generate final scorecard and recommendations for a completed viva session."""
+    session = viva_sessions.get(request.session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Viva session not found or expired.")
+
+    total_score = sum(session["scores"].values())
+    total_possible = len(session["questions"]) * 15
+    pct = round((total_score / total_possible * 100) if total_possible > 0 else 0, 1)
+    grade = _grade(pct)
+
+    # Build per-question breakdown
+    breakdown: List[VivaQuestionBreakdown] = []
+    weak_topics: List[str] = []
+    strong_topics: List[str] = []
+
+    for q in session["questions"]:
+        q_num = q.get("q_num")
+        score = session["scores"].get(q_num, 0)
+        topic_tag = q.get("topic_tag", "General")
+        breakdown.append(VivaQuestionBreakdown(
+            question_number=q_num,
+            question=q.get("question", ""),
+            student_answer=session["answers"].get(q_num, "(not answered)"),
+            score=score,
+            max_score=15,
+            feedback=session["feedback"].get(q_num, ""),
+            correct_answer_summary=session["correct_answers"].get(q_num, ""),
+            topic_tag=topic_tag,
+        ))
+        if score < 8:
+            if topic_tag not in weak_topics:
+                weak_topics.append(topic_tag)
+        elif score >= 12:
+            if topic_tag not in strong_topics:
+                strong_topics.append(topic_tag)
+
+    # Generate AI recommendations
+    weak_str = ", ".join(weak_topics) if weak_topics else "None identified"
+    prompt = f"""A student just completed a viva exam with {pct}% score (Grade: {grade}).
+Weak topics: {weak_str}
+Strong topics: {", ".join(strong_topics) if strong_topics else "None"}
+
+Write 2-3 sentences of specific, actionable study recommendations to improve weak areas.
+Keep it encouraging and practical. Return only the recommendation text, no JSON."""
+
+    recommendations = await run_in_threadpool(invoke_llm_with_fallback, prompt)
+
+    # Clean session
+    del viva_sessions[request.session_id]
+
+    return VivaSummaryResponse(
+        total_score=total_score,
+        max_score=total_possible,
+        percentage=pct,
+        grade=grade,
+        weak_topics=weak_topics,
+        strong_topics=strong_topics,
+        recommendations=recommendations.strip(),
+        question_breakdown=breakdown,
+    )
+
+
 # Mount docs directory so they can be viewed
 app.mount("/docs", StaticFiles(directory="docs"), name="docs")
 
@@ -630,3 +1069,4 @@ async def root():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+
